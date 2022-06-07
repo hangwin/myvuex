@@ -1,36 +1,37 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <hr/>
+    <!-- <hr/>
     <h2>用户信息：{{ userInfo.name }}-{{ userInfo.age }}-{{ userInfo.money }}</h2>
     <h2>getter: {{ moneyPlus }}</h2>
     <button @click="addMoney">加钱</button>
-    <button @click="addMoneyAsync">异步加钱</button>
+    <button @click="addMoneyAsync">异步加钱</button> -->
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue';
-import { useStore } from 'vuex';
+import { useStore } from '../mvuex';
 export default defineComponent({
-  name: 'HelloWorld',
+  name: 'HelloWorldMVuex',
   props: {
     msg: String,
   },
   setup() {
     const store = useStore();
-    const addMoney = () => {
-      store.commit('addMoney');
-    }
-    const addMoneyAsync = () => {
-      store.dispatch('addMoneyAsync');
-    }
-    return {
-      userInfo: store.state.userInfo,
-      addMoney,
-      addMoneyAsync,
-      moneyPlus: computed(() => store.getters['getMoneyPlus']),
-    }
+    console.log('useStore', store);
+    // const addMoney = () => {
+    //   store.commit('addMoney');
+    // }
+    // const addMoneyAsync = () => {
+    //   store.dispatch('addMoneyAsync');
+    // }
+    // return {
+    //   userInfo: store.state.userInfo,
+    //   addMoney,
+    //   addMoneyAsync,
+    //   moneyPlus: computed(() => store.getters['getMoneyPlus']),
+    // }
   },
 });
 </script>
