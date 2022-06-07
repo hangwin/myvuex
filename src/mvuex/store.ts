@@ -39,6 +39,14 @@ export interface StoreOptions<S> {
     getters?: GetterTree<S, S>;
     modules?: ModuleTree<S>;
 }
+
+export interface DispatchOptions {
+    root?: boolean;
+}
+export interface Payload {
+    type: string;
+}
+
 export function createStore<S>(options: StoreOptions<S>) {
     return new Store(options);
 }
@@ -53,6 +61,12 @@ export class Store<S> {
     install(app: App, injectKey?: symbol | string) {
         app.provide(injectKey || storeKey, this);
     }
-    // dispatch() {}
+    dispatch<P extends Payload>(type: P, options?: DispatchOptions): Promise<any>;
+    dispatch<P extends Payload>(type: string | P, payload?: any, options?: DispatchOptions): Promise<any> {
+        return new Promise((resolve, reject) => {
+            resolve(null);
+        });
+    }
+
     // commit() {}
 }
