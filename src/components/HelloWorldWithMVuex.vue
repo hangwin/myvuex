@@ -1,9 +1,9 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <!-- <hr/>
+    <h1>自己的vuex</h1>
+    <hr/>
     <h2>用户信息：{{ userInfo.name }}-{{ userInfo.age }}-{{ userInfo.money }}</h2>
-    <h2>getter: {{ moneyPlus }}</h2>
+    <!-- <h2>getter: {{ moneyPlus }}</h2>
     <button @click="addMoney">加钱</button>
     <button @click="addMoneyAsync">异步加钱</button> -->
   </div>
@@ -26,12 +26,12 @@ export default defineComponent({
     // const addMoneyAsync = () => {
     //   store.dispatch('addMoneyAsync');
     // }
-    // return {
-    //   userInfo: store.state.userInfo,
-    //   addMoney,
-    //   addMoneyAsync,
-    //   moneyPlus: computed(() => store.getters['getMoneyPlus']),
-    // }
+    return {
+      userInfo: store.state.userInfo,
+      // addMoney,
+      // addMoneyAsync,
+      // moneyPlus: computed(() => store.getters['getMoneyPlus']),
+    }
   },
 });
 </script>
