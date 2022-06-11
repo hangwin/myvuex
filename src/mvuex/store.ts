@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-import { assert } from ".pnpm/@vue+compiler-core@3.2.37/node_modules/@vue/compiler-core";
 import { App, reactive } from "vue";
 import { storeKey } from './injectKey';
+import { assert, forEachValue, isPromise } from "./util";
 export type Mutation<S> = (state: S, payload?: any) => any;
 export interface MutationTree<S> {
     [key: string]: Mutation<S>;
@@ -9,6 +9,8 @@ export interface MutationTree<S> {
 export type ActionContext<S, R> = {
     state: S;
     rootState: R;
+    dispatch: Dispatch;
+    commit: Commit;
 }
 export type ActionHandler<S, R> = (this: Store<R>, injectee: ActionContext<S, R>, payload?: any) => any
 export interface ActionObject<S, R> {
@@ -56,9 +58,22 @@ export interface Payload {
 export function createStore<S>(options: StoreOptions<S>) {
     return new Store(options);
 }
+
+export interface Dispatch {
+    <P extends Payload>(type: P, options?: DispatchOptions): Promise<any>;
+    (type: string, payload?: any, options?: DispatchOptions): Promise<any>;
+}
+export interface Commit {
+    <P extends Payload>(payloadWithType: P, options?: CommitOptions): void;
+    (type: string, payload?: any, options?: CommitOptions): void;
+}
 export class Store<S> {
-    private _actions: any;
-    private _mutations: any;
+    private _actions: {
+        [key: string]: ((payload?: any) => any)[];
+    };
+    private _mutations: {
+        [key: string]: ((payload?: any) => any)[];
+    };
     private _state: any;
     constructor(options: StoreOptions<S>) {
         console.log('mvuex..', options);
@@ -67,6 +82,12 @@ export class Store<S> {
         this.dispatch = this.dispatch.bind(this);
         this.commit = this.commit.bind(this);
         resetStoreState(this, options.state);
+        forEachValue<Mutation<S>>(options.mutations, (key, value) => {
+            this.registerMutation(key, value);
+        });
+        forEachValue<ActionHandler<S, S>>(options.actions, (key, value) => {
+            this.registerAction(key, value);
+        })
     }
     get state():S {
         return this._state.data;
@@ -80,34 +101,68 @@ export class Store<S> {
         app.provide(injectKey || storeKey, this);
         app.config.globalProperties.$store = this;
     }
-    dispatch<P extends Payload>(type: P, options?: DispatchOptions): Promise<any>;
-    dispatch(type: string, payload?: any, options?: DispatchOptions): Promise<any>;
+    
     dispatch<P extends Payload>(type: string | P, payload?: any, options?: DispatchOptions): Promise<any> {
         if (typeof type === 'object' && type.type) {
             options = payload;
             payload = type;
             type = type.type;
         }
+        const entry = this._actions[type as string];
+        if (!entry) {
+            if (__DEV__) {
+                console.error(`[mvuex] 非法的action类型：${type}`);
+            }
+        }
+        const result = entry.length > 1 ? Promise.all(entry.map(handler => handler(payload))) : entry[0](payload);
         console.log(type, payload, options);
-        return new Promise((resolve, reject) => {
-            resolve(null);
+        return new Promise((resolve) => {
+            result.then((res: any) => {
+                resolve(res);
+            });
         });
     }
-
-    commit<P extends Payload>(payloadWithType: P, options?: CommitOptions): void;
-    commit(type: string, payload?: any, options?: CommitOptions): void;
     commit<P extends Payload>(type: string | P, payload?: any, options?: CommitOptions) {
         if (typeof type === 'object' && type.type) {
             options = payload;
             payload = type;
             type = type.type;
         }
+        const entry = this._mutations[type as string];
+        if (!entry) {
+            if (__DEV__) {
+                console.error(`[mvuex] 非法的mutation类型：${type}`);
+            }
+        }
+        entry.forEach(handler => {
+            handler(payload);
+        });
+    }
+    registerMutation<S>(type: string, handler: Mutation<S>) {
+        const entry = this._mutations[type] = this._mutations[type] || [];
+        entry.push((payload?: any) => {
+            handler.call(this, this.state as unknown as S, payload);
+        })
+    }
+    registerAction<S>(type: string, handler: ActionHandler<S, S>) {
+        const entry = this._actions[type] = this._actions[type] || [];
+        entry.push((payload?: any) => {
+            let res = handler.call(this as unknown as Store<S>, {
+                dispatch: this.dispatch,
+                commit: this.commit,
+                state: this.state as unknown as S,
+                rootState: this.state as unknown as S,
+            }, payload);
+            if (!isPromise(res)) {
+                res = Promise.resolve(res);
+            }
+            return res;
+        })
     }
 }
 
 // 用于对state的数据进行响应式处理
-function resetStoreState(store: any, state: any, hot?: boolean) {
-    const oldState = store._state;
+function resetStoreState(store: any, state: any) {
     store._state = reactive({
         data: state,
     });

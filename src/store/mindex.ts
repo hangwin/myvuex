@@ -18,13 +18,13 @@ export default createStore({
       state.userInfo.money = state.userInfo.money * money;
     }
   },
-//   actions: {
-//     addMoneyAsync({ commit }) {
-//       setTimeout(() => {
-//         commit('addMoney')
-//       }, 1000)
-//     }
-//   },
+  actions: {
+    addMoneyAsync({ commit }, money = 1) {
+      setTimeout(() => {
+        commit('addMoney')
+      }, 1000)
+    }
+  },
 //   modules: {
 //     job: {
 //       state: {
