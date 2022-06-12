@@ -10,7 +10,7 @@ export default createStore({
   },
   getters: {
     getMoneyPlus(state) {
-      return state.userInfo.money * 10;
+        return state.userInfo.money * 10;
     },
   },
   mutations: {

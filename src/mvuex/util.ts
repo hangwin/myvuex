@@ -9,3 +9,9 @@ export function assert(condition: boolean, msg: string) {
 export function isPromise(val: any): boolean {
     return val && typeof val.then === 'function';
 }
+
+export function partial(fn: (...args: any[]) => any, ...args: any[]) {
+    return function() {
+        return fn(args);
+    }
+}

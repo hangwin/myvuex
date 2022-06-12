@@ -3,11 +3,9 @@
     <h1>自己的vuex</h1>
     <hr/>
     <h2>用户信息：{{ userInfo.name }}-{{ userInfo.age }}-{{ userInfo.money }}</h2>
+    <h2>getter: {{ moneyPlus }}</h2>
     <button @click="addMoney">加钱</button>
     <button @click="addMoneyAsync">异步加钱</button>
-    <!-- <h2>getter: {{ moneyPlus }}</h2>
-    <button @click="addMoney">加钱</button>
-    <button @click="addMoneyAsync">异步加钱</button> -->
   </div>
 </template>
 
@@ -32,7 +30,7 @@ export default defineComponent({
       userInfo: store.state.userInfo,
       addMoney,
       addMoneyAsync,
-      // moneyPlus: computed(() => store.getters['getMoneyPlus']),
+      moneyPlus: computed(() => store.getters['getMoneyPlus']),
     }
   },
 });

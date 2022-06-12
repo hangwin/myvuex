@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 import { App, reactive } from "vue";
 import { storeKey } from './injectKey';
-import { assert, forEachValue, isPromise } from "./util";
+import { assert, forEachValue, isPromise, partial } from "./util";
 export type Mutation<S> = (state: S, payload?: any) => any;
 export interface MutationTree<S> {
     [key: string]: Mutation<S>;
@@ -75,19 +75,25 @@ export class Store<S> {
         [key: string]: ((payload?: any) => any)[];
     };
     private _state: any;
+    private _wrappedGetters: any;
+    getters: any;
     constructor(options: StoreOptions<S>) {
         console.log('mvuex..', options);
         this._actions = Object.create(null);
         this._mutations = Object.create(null);
+        this._wrappedGetters = Object.create(null);
         this.dispatch = this.dispatch.bind(this);
         this.commit = this.commit.bind(this);
-        resetStoreState(this, options.state);
         forEachValue<Mutation<S>>(options.mutations, (key, value) => {
             this.registerMutation(key, value);
         });
         forEachValue<ActionHandler<S, S>>(options.actions, (key, value) => {
             this.registerAction(key, value);
         })
+        forEachValue(options.getters, (key, value) => {
+            this.registerGetter(key, value);
+        });
+        resetStoreState(this, options.state);
     }
     get state():S {
         return this._state.data;
@@ -159,10 +165,35 @@ export class Store<S> {
             return res;
         })
     }
+    registerGetter<S>(type: string, rawGetter: Getter<S, S>) {
+        if (this._wrappedGetters[type]) {
+            if (__DEV__) {
+                console.error(`[mvuex] getter的key重复了：${type}`);
+            }
+            return;
+        }
+        this._wrappedGetters[type] = (store: Store<S>) => {
+            return rawGetter(this.state as unknown as S, this.getters, store.state as unknown as S, store.getters);
+        }
+    }
 }
 
 // 用于对state的数据进行响应式处理
 function resetStoreState(store: any, state: any) {
+    store.getters = {};
+    const wrappedGetters = store._wrappedGetters;
+    const computedObj: any = {};
+    forEachValue(wrappedGetters, (key, value) => {
+        // rootStore传给getter
+        computedObj[key] = partial(value, store);
+        Object.defineProperty(store.getters, key, {
+            get() {
+                console.log('getgetters', computedObj[key]());
+                return computedObj[key]();
+            },
+            enumerable: true,
+        })
+    });
     store._state = reactive({
         data: state,
     });
