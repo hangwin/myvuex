@@ -6,7 +6,8 @@ export default createStore({
       name: 'hangye',
       age: 18,
       money: 9999,
-    }
+    },
+    same: 'same1',
   },
   getters: {
     getMoneyPlus(state) {
@@ -25,30 +26,36 @@ export default createStore({
       }, 1000)
     }
   },
-//   modules: {
-//     job: {
-//       state: {
-//         type: 'it',
-//         title: 'web front end',
-//         money: 50000,
-//       },
-//       mutations: {
-//         addMoney(state) {
-//           state.money = state.money + 5000;
-//         }
-//       },
-//       actions: {
-//         addMoneyAsync({ commit }) {
-//           setTimeout(() => {
-//             commit('addMoney');
-//           }, 2000);
-//         }
-//       },
-//       getters: {
-//         getJobMoneyAfterTax(state) {
-//           return state.money - 5000;
-//         },
-//       }
-//     }
-//   }
+  modules: {
+    job: {
+      state: {
+        type: 'it',
+        title: 'web front end',
+        money: 50000,
+      },
+      mutations: {
+        addMoney(state) {
+          state.money = state.money + 5000;
+        }
+      },
+      actions: {
+        addMoneyAsync({ commit }) {
+          setTimeout(() => {
+            commit('addMoney');
+          }, 2000);
+        }
+      },
+      getters: {
+        getJobMoneyAfterTax(state) {
+          return state.money - 5000;
+        },
+      }
+    },
+    same: {
+      namespaced: true,
+      state: {
+        info: 'module same',
+      }
+    }
+  }
 })

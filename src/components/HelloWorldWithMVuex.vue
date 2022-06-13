@@ -6,6 +6,7 @@
     <h2>getter: {{ moneyPlus }}</h2>
     <button @click="addMoney">加钱</button>
     <button @click="addMoneyAsync">异步加钱</button>
+    {{ same }}
   </div>
 </template>
 
@@ -30,6 +31,7 @@ export default defineComponent({
       userInfo: store.state.userInfo,
       addMoney,
       addMoneyAsync,
+      same: store.state.same,
       moneyPlus: computed(() => store.getters['getMoneyPlus']),
     }
   },

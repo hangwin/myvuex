@@ -1,12 +1,14 @@
 import { createStore } from 'vuex'
 
 export default createStore({
+  strict: true,
   state: {
     userInfo: {
       name: 'hangye',
       age: 18,
       money: 9999,
-    }
+    },
+    same: 'same1',
   },
   getters: {
     getMoneyPlus(state) {
@@ -48,6 +50,12 @@ export default createStore({
         getJobMoneyAfterTax(state) {
           return state.money - 5000;
         },
+      }
+    },
+    same: {
+      namespaced: true,
+      state: {
+        info: 'module same',
       }
     }
   }
