@@ -6,7 +6,7 @@
     <h2>getter: {{ moneyPlus }}</h2>
     <button @click="addMoney">加钱</button>
     <button @click="addMoneyAsync">异步加钱</button>
-    {{ same }}
+    <button @click="addJobMoney">addJobMoney</button>
   </div>
 </template>
 
@@ -27,12 +27,16 @@ export default defineComponent({
     const addMoneyAsync = () => {
       store.dispatch('addMoneyAsync', 1);
     }
+    const addJobMoney = () => {
+      store.commit('job/addMoney', 1);
+    }
     return {
       userInfo: store.state.userInfo,
       addMoney,
       addMoneyAsync,
       same: store.state.same,
       moneyPlus: computed(() => store.getters['getMoneyPlus']),
+      addJobMoney,
     }
   },
 });

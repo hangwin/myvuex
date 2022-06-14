@@ -28,6 +28,7 @@ export default createStore({
   },
   modules: {
     job: {
+      namespaced: true,
       state: {
         type: 'it',
         title: 'web front end',

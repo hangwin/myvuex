@@ -93,6 +93,7 @@ export class Store<S> {
     private _makeLocalGettersCache: any;
     private _subscribers: any[];
     private _actionSubscribers: any[];
+    lastGetGetterKey: string | any;
     constructor(options: StoreOptions<S>) {
         console.log('mvuex..', options);
         const { plugins = [], strict } = options;
@@ -141,9 +142,9 @@ export class Store<S> {
         }
         try {
             this._actionSubscribers
-            .slice()
-            .filter((sub: any) => sub.before)
-            .forEach((sub: any) => sub({ type, payload }, this.state));            
+                .slice()
+                .filter((sub: any) => sub.before)
+                .forEach((sub: any) => sub.before({ type, payload }, this.state));            
         } catch (error) {
             if (__DEV__) {
                 console.warn(`[mvuex] 前置action订阅者执行出错`);
@@ -157,7 +158,7 @@ export class Store<S> {
                 try {
                     this._actionSubscribers
                         .filter((sub: any) => sub.after)
-                        .forEach((sub: any) => sub({ type, payload}, this.state));
+                        .forEach((sub: any) => sub.after({ type, payload}, this.state));
                 } catch (error) {
                     if (__DEV__) {
                         console.warn(`[mvuex] 后置action订阅者执行出错`);
@@ -169,7 +170,7 @@ export class Store<S> {
                 try {
                     this._actionSubscribers
                         .filter((sub: any) => sub.error)
-                        .forEach((sub: any) => sub({ type, payload }, this.state ));
+                        .forEach((sub: any) => sub.error({ type, payload }, this.state ));
                 } catch (error) {
                     if (__DEV__) {
                         console.warn(`[mvuex] 错误action订阅者执行出错`);
@@ -325,13 +326,20 @@ export class Store<S> {
 
         Object.defineProperties(local, {
             getters: {
-                get: noNamespace ? () => store.getters : () => store.makeLocalGetters(namespace)
-            },
-            state: {
-                // 根据当前路径获取局部状态对象的state
-                get: () => getNestedState(store.state, path),
-            },
-        });
+                get: noNamespace
+                        ? () => {
+                            return store.getters;
+                        }
+                        : () => {
+                            return store.makeLocalGetters(namespace)
+                        }
+                },
+                state: {
+                    // 根据当前路径获取局部状态对象的state
+                    get: () => getNestedState(store.state, path),
+                },
+            }
+        );
         return local;
     }
     makeLocalGetters(namespace: string) {
@@ -352,10 +360,10 @@ export class Store<S> {
         }
         return this._makeLocalGettersCache[namespace];
     }
-    subscribe(fn: (...args: any[]) => any, options: any) {
+    subscribe(fn: (...args: any[]) => any, options?: any) {
        return genericSubscribe(fn, this._subscribers, options)
     }
-    subscribeAction(fn: any, options: any) {
+    subscribeAction(fn: any, options?: any) {
         const subs = typeof fn === 'function' ? { before: fn }: fn;
         return genericSubscribe(subs, this._actionSubscribers, options);
     }
@@ -371,7 +379,7 @@ function resetStoreState(store: any, state: any) {
         computedObj[key] = partial(value, store);
         Object.defineProperty(store.getters, key, {
             get() {
-                console.log('getgetters', computedObj[key]());
+                store.lastGetGetterKey = key;
                 return computedObj[key]();
             },
             enumerable: true,
