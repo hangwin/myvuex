@@ -39,7 +39,7 @@
     <div class="getters">
        <a-list size="small" :data-source="getters">
         <template #renderItem="{ item }">
-          <a-list-item :class="{ curaction: item === lastGetterKey }">{{ item }}: {{ getGetterValue(item) }}</a-list-item>
+          <a-list-item :class="{ curaction: item + counter === lastGetterKey }">{{ item }}: {{ getGetterValue(item) }}</a-list-item>
         </template>
         <template #header>
           <div>Getters</div>
@@ -68,6 +68,7 @@ export default defineComponent({
     const actionType = ref('');
     const changePath = ref('');
     let afterAction = false;
+    const counter = ref(0);
     store.subscribe((mutation: any, state: any) => {
       if (!afterAction) {
         actionType.value = '';
@@ -75,7 +76,7 @@ export default defineComponent({
         afterAction = false;
       }
       mutationType.value = mutation.type;
-      console.log('commit', state);
+      counter.value++;
     });
     store.subscribeAction((action: any, state: any) => {
       afterAction = true;
@@ -96,8 +97,7 @@ export default defineComponent({
     };
     const getGetterValue = (key: string) => store.getters[key];
     const lastGetterKey = computed(() => {
-      console.log(store.getters[store.lastGetGetterKey]);
-      return store.lastGetGetterKey;
+      return store.lastGetGetterKey + counter.value;
     });
     return {
       showLine,
@@ -111,6 +111,7 @@ export default defineComponent({
       changePath,
       getGetterValue,
       lastGetterKey,
+      counter,
     };
   },
 });
