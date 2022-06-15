@@ -7,6 +7,7 @@
     <button @click="addMoney">加钱</button>
     <button @click="addMoneyAsync">异步加钱</button>
     <button @click="addJobMoney">addJobMoney</button>
+    <button @click="addJobMoneyAsync">addJobMoneyAsync</button>
   </div>
 </template>
 
@@ -30,6 +31,9 @@ export default defineComponent({
     const addJobMoney = () => {
       store.commit('job/addMoney', 1);
     }
+    const addJobMoneyAsync = () => {
+      store.dispatch('job/addMoneyAsync', 1);
+    }
     return {
       userInfo: store.state.userInfo,
       addMoney,
@@ -37,6 +41,7 @@ export default defineComponent({
       same: store.state.same,
       moneyPlus: computed(() => store.getters['getMoneyPlus']),
       addJobMoney,
+      addJobMoneyAsync
     }
   },
 });

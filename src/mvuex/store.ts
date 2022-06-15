@@ -266,7 +266,7 @@ export class Store<S> {
             });
         }
         // 局部状态对象
-        const local = module.context = this.makeLocalContext(namespace, path);
+        const local = module.context = this.makeLocalContext(namespace, path) as any;
         module.forEachMutation((key, value) => {
             // moduleA/xxx
             const namespacedType = namespace + key;
@@ -303,6 +303,7 @@ export class Store<S> {
                     _type = namespace + _type;
                     if (__DEV__ && !store._actions[_type]) {
                         console.error(`[mvuex] 未知的模块action类型：${_type}, 全局类型：${type}`);
+                        return;
                     }
                 }
                 return store.dispatch(_type, _payload);
@@ -316,8 +317,9 @@ export class Store<S> {
                 }
                 if (!_options || !_options.root) {
                     _type = namespace + _type;
-                    if (__DEV__ && !store._actions[_type]) {
+                    if (__DEV__ && !store._mutations[_type]) {
                         console.error(`[mvuex] 未知的模块mutation类型：${_type}, 全局类型：${type}`);
+                        return;
                     }
                 }
                 return store.commit(_type, _payload, _options);

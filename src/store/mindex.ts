@@ -17,6 +17,9 @@ export default createStore({
   mutations: {
     addMoney(state, money = 2) {
       state.userInfo.money = state.userInfo.money * money;
+    },
+    addAge(state,) {
+      state.userInfo.age++;
     }
   },
   actions: {
